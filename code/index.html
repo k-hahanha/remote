@@ -17,8 +17,13 @@
 
         //Peer作成
         const peer = new Peer({
-            key: 'あなたのAPIキー',
+            key: '8cc01263-d3bb-41fb-9852-a4aae4498889',
             debug: 3
+        });
+
+        //PeerID取得
+        peer.on('open', () => {
+            document.getElementById('my-id').textContent = peer.id;
         });
 
         let localStream;
@@ -36,11 +41,6 @@
           // 失敗時にはエラーログを出力
           console.error('mediaDevice.getUserMedia() error:', error);
           return;
-        });
-
-        //PeerID取得
-        peer.on('open', () => {
-            document.getElementById('my-id').textContent = peer.id;
         });
 
         // 発信処理
