@@ -58,13 +58,14 @@
                 videoElm.srcObject = stream;
                 videoElm.play();
             });
+        }
 
         //着信処理
         peer.on('call', mediaConnection => {
             mediaConnection.answer(localStream);
             setEventListener(mediaConnection);
-            });
-        }
+        });
+        
       </script>
 </body>
 </html>
