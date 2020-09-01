@@ -667,7 +667,7 @@
         <div class="col-12 col-md-10 col-lg-8 text-center">
           <div class="fdb-box">
             <h3>以下のURLを遠隔地のスマートフォンで開いてください</h3>
-            <p class="lead">https://k-hahanha.github.io/remote?roomid=remote</p>
+            <p class="lead">https://k-hahanha.github.io/remote/client</p>
             <button class="btn btn-primary" onclick="copyToClipboard()">コピー</button>
           </div>
         </div>
@@ -711,6 +711,20 @@
     // 着信時返信用のカメラ映像 Null - 映像取得不可
     let localStream;
 
+    // メッシュ接続のルーム グローバル変数
+    let room;
+
+    //---------------------------------------------
+    // [event] ページ読み込み完了
+    //---------------------------------------------
+    window.onload = () => {
+      // 入室処理　ModeはMesh（サーバーを介さない双方向通信）
+      room = peer.joinRoom('remote', {
+        mode: 'mesh',
+        stream: curSTREAM,
+      });
+    };
+
     // カメラ映像取得
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then(stream => {
@@ -729,12 +743,6 @@
         // 映像取得　不可
         localStream = null;
       });
-
-    // 入室処理　ModeはMesh（サーバーを介さない双方向通信）
-    const room = peer.joinRoom('remote', {
-      mode: 'mesh',
-      stream: localStream,
-    });
 
     // ルームに新規ピアが参加時に発火
     room.on('stream', async stream => {
