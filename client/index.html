@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <script src="https://cdn.webrtc.ecl.ntt.com/skyway-latest.js"></script>
+  <title>SkyWayチュートリアル</title>
+</head>
+
+<body>
+  <img alt="image" class="img-fluid" src="https://placehold.jp/1600x900.png"></p>
+  <video id="my-video" width="100%" autoplay muted playsinline></video>
+
+  <br>
+  <p style="text-align: center;">このサイトはスマートフォン横向きを想定しています
+    <br>縦画面にて起動した場合は、横画面に変更ののちにブラウザを更新してください</p>
+  <button class="btn btn-primary" style="text-align: center;" id="btn-toggle">カメラ切り替え</button>
+  <br>
+
+  <div style="text-align: center;">
+    <video id="their-video" width="400px" autoplay muted playsinline></video>
+  </div>
+
+  <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+  <script>
+
+    //---------------------------------------------
+    // グローバル変数
+    //---------------------------------------------
+    // カメラのデフォルト設定
+    var CONSTRAINTS = {
+      audio: false,
+      video: {
+        facingMode: null  // どのカメラを利用するか
+
+        // facingModeには最終的に以下のいずれかの値を入れる
+        //   facingMode: "user"                    // フロントカメラを利用する
+        //   facingMode: { exact: "environment" }  // リアカメラを利用する
+      }
+    };
+
+    // 現在のStream
+    var curSTREAM = null;
+
+    //Peer作成
+    const peer = new Peer({
+      key: '8cc01263-d3bb-41fb-9852-a4aae4498889',
+      debug: 3
+    });
+
+    //---------------------------------------------
+    // [event] ページ読み込み完了
+    //---------------------------------------------
+    window.onload = () => {
+      const video = document.querySelector("#my-video");
+      let useFront = true;     // フロントカメラ:true, バックカメラ:false
+
+      // カメラと同期開始
+      syncCamera(video, useFront);
+      useFront = !useFront;         // boolean値を反転
+
+      //-------------------------------
+      // [event] 切り替えボタン押下
+      //-------------------------------
+      document.querySelector("#btn-toggle").addEventListener("click", () => {
+        syncCamera(video, useFront);
+        useFront = !useFront;      // boolean値を反転
+      });
+    };
+
+    //---------------------------------------------
+    // カメラを<video>と同期
+    //
+    // @param {object} video
+    // @param {boolean} [is_front=true]
+    //---------------------------------------------
+    function syncCamera(video, is_front = true) {
+      // 前後カメラの設定
+      CONSTRAINTS.video.facingMode = (is_front) ? "user" : { exact: "environment" };
+
+      // すでにカメラと接続していたら停止
+      if (curSTREAM !== null) {
+        curSTREAM.getVideoTracks().forEach((camera) => {
+          camera.stop();
+        });
+      }
+
+      // カメラと接続する
+      navigator.mediaDevices.getUserMedia(CONSTRAINTS)
+        .then((stream) => {
+          curSTREAM = stream;   // 前後の切り替え用に保持
+
+          // <video>とStremaを接続
+          video.srcObject = stream;
+          video.onloadedmetadata = (e) => {
+            video.play();
+          };
+        })
+        .catch((err) => {
+          console.log(`${err.name}: ${err.message}`);
+          alert("カメラとの接続時にエラーが発生しました");
+        });
+    }
+
+    // 入室処理　ModeはMesh（サーバーを介さない双方向通信）
+    const room = peer.joinRoom('remote', {
+      mode: 'mesh',
+      stream: curSTREAM,
+    });
+
+    // カメラ映像取得
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        // 成功時にvideo要素にカメラ映像をセットし、再生
+        const videoElm = document.getElementById('my-video')
+        videoElm.srcObject = stream;
+        videoElm.play();
+        // 着信時に相手にカメラ映像を返せるように、グローバル変数に保存しておく
+        localStream = stream;
+      }).catch(error => {
+        // 失敗時にはエラーログを出力
+        console.error('mediaDevice.getUserMedia() error:', error);
+        return;
+      });
+
+    // 発信処理
+    document.getElementById('make-call').onclick = () => {
+      const theirID = document.getElementById('their-id').value;
+      const mediaConnection = peer.call(theirID, localStream);
+      setEventListener(mediaConnection);
+    };
+
+    // イベントリスナを設置する関数
+    const setEventListener = mediaConnection => {
+      mediaConnection.on('stream', stream => {
+        // video要素にカメラ映像をセットして再生
+        const videoElm = document.getElementById('their-video')
+        videoElm.srcObject = stream;
+        videoElm.play();
+      });
+    }
+
+    //着信処理
+    peer.on('call', mediaConnection => {
+      mediaConnection.answer(localStream);
+      setEventListener(mediaConnection);
+    });
+
+  </script>
+</body>
+
+</html>
