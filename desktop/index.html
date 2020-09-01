@@ -743,26 +743,28 @@
         mode: 'mesh',
         stream: localStream,
       });
+
+      // ルームに新規ピアが参加時に発火
+      room.on('stream', async stream => {
+        // -------- 以下、複数通信用ソースコード --------
+        // const newVideo = document.createElement('video');
+        // newVideo.srcObject = stream;
+        // newVideo.playsInline = true;
+        // PearIDを属性づけすることで、退室時の処理を可能に
+        // newVideo.setAttribute('data-peer-id', stream.peerId);
+
+        // -------- 以下、対１用ソースコード --------
+        // プレースホルダとの差し替えの実施
+        document.getElementById('their-video-place').outerHTML = '<video id="their-video" autoplay muted playsinline></video>';
+
+        // video要素にカメラ映像をセットして再生
+        const videoElm = document.getElementById('their-video')
+        videoElm.srcObject = stream;
+        videoElm.play();
+      });
     };
 
-    // ルームに新規ピアが参加時に発火
-    room.on('stream', async stream => {
-      // -------- 以下、複数通信用ソースコード --------
-      // const newVideo = document.createElement('video');
-      // newVideo.srcObject = stream;
-      // newVideo.playsInline = true;
-      // PearIDを属性づけすることで、退室時の処理を可能に
-      // newVideo.setAttribute('data-peer-id', stream.peerId);
 
-      // -------- 以下、対１用ソースコード --------
-      // プレースホルダとの差し替えの実施
-      document.getElementById('their-video-place').outerHTML = '<video id="their-video" autoplay muted playsinline></video>';
-
-      // video要素にカメラ映像をセットして再生
-      const videoElm = document.getElementById('their-video')
-      videoElm.srcObject = stream;
-      videoElm.play();
-    });
 
   </script>
 
