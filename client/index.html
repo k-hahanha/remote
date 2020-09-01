@@ -78,6 +78,22 @@
         syncCamera(video, useFront);
         useFront = !useFront;      // boolean値を反転
       });
+
+
+      // ルームに新規ピアが参加時に発火
+      room.on('stream', async stream => {
+        // -------- 以下、複数通信用ソースコード --------
+        // const newVideo = document.createElement('video');
+        // newVideo.srcObject = stream;
+        // newVideo.playsInline = true;
+        // PearIDを属性づけすることで、退室時の処理を可能に
+        // newVideo.setAttribute('data-peer-id', stream.peerId);
+
+        // video要素にカメラ映像をセットして再生
+        const videoElm = document.getElementById('their-video')
+        videoElm.srcObject = stream;
+        videoElm.play();
+      });
     };
 
 
@@ -115,20 +131,6 @@
           alert("カメラとの接続時にエラーが発生しました");
         });
 
-      // ルームに新規ピアが参加時に発火
-      room.on('stream', async stream => {
-        // -------- 以下、複数通信用ソースコード --------
-        // const newVideo = document.createElement('video');
-        // newVideo.srcObject = stream;
-        // newVideo.playsInline = true;
-        // PearIDを属性づけすることで、退室時の処理を可能に
-        // newVideo.setAttribute('data-peer-id', stream.peerId);
-
-        // video要素にカメラ映像をセットして再生
-        const videoElm = document.getElementById('their-video')
-        videoElm.srcObject = stream;
-        videoElm.play();
-      });
     }
 
   </script>
