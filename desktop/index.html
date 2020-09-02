@@ -697,10 +697,7 @@
   <script>
 
     //Peer作成
-    const peer = new Peer({
-      key: '8cc01263-d3bb-41fb-9852-a4aae4498889',
-      debug: 3
-    });
+    let peer;
 
     // URLコピー機能
     function copyToClipboard() {
@@ -718,6 +715,11 @@
     // [event] ページ読み込み完了
     //---------------------------------------------
     window.onload = () => {
+
+      peer = new Peer({
+        key: '8cc01263-d3bb-41fb-9852-a4aae4498889',
+        debug: 3
+      });
 
       // カメラ映像取得
       navigator.mediaDevices.getUserMedia({ video: true, audio: true })
